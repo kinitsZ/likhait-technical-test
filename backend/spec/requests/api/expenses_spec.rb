@@ -6,7 +6,7 @@ RSpec.describe "Api::Expenses", type: :request do
 
   describe "GET /api/expenses" do
   let!(:expense1) { Expense.create!(description: "Lunch", amount: 100.00, category: food_category, date: Date.today) }
-  let!(:expense2) { Expense.create!(description: "Taxi", amount: 50.00, category: transport_category, date: Date.today) }
+  let!(:expense2) { Expense.create!(description: "Taxi", amount: 50.00, category: transport_category, date: Date.today - 1) }
 
     it "returns all expenses with category information" do
       get "/api/expenses"
@@ -16,12 +16,25 @@ RSpec.describe "Api::Expenses", type: :request do
       expect(json.length).to eq(2)
     end
 
-    it "returns expenses in descending order by created_at" do
+    it "returns expenses in descending order by expense date" do
       get "/api/expenses"
 
       json = JSON.parse(response.body)
-      expect(json.first["id"]).to eq(expense2.id)
-      expect(json.last["id"]).to eq(expense1.id)
+      expect(json.first["id"]).to eq(expense1.id)
+      expect(json.last["id"]).to eq(expense2.id)
+    end
+    it "filters by expense date, not creation timestamp" do
+      past_expense = Expense.create!(
+        description: "Old receipt",
+        amount: 25.00,
+        category: food_category,
+        date: Date.new(2026, 2, 10)
+      )
+
+      get "/api/expenses", params: { year: 2026, month: 2 }
+
+      json = JSON.parse(response.body)
+      expect(json.map { |e| e["id"] }).to include(past_expense.id)
     end
   end
 
