@@ -1,3 +1,11 @@
+# docker-compose runs `db:seed` on every container start, so seeding has to be
+# safe to re-run. Without this guard every restart wiped the database, taking
+# any data entered through the UI with it.
+if (Category.exists? || Expense.exists?) && ENV["FORCE_SEED"].blank?
+  puts "Database already has data; skipping seed. Set FORCE_SEED=1 to reseed."
+  exit
+end
+
 # Clear existing data
 puts "Clearing existing data..."
 Expense.destroy_all
