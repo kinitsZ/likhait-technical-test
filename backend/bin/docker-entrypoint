@@ -5,6 +5,11 @@ if [ -z "${LD_PRELOAD+x}" ] && [ -f /usr/lib/*/libjemalloc.so.2 ]; then
   export LD_PRELOAD="$(echo /usr/lib/*/libjemalloc.so.2)"
 fi
 
+# Clear any server pid left behind by an unclean shutdown. tmp/ is bind-mounted
+# from the host in development, so a stale pid survives container restarts and
+# stops Rails from booting until it is removed by hand.
+rm -f /rails/tmp/pids/server.pid
+
 # If running the rails server then create or migrate existing database
 if [ "${1}" == "./bin/rails" ] && [ "${2}" == "server" ]; then
   ./bin/rails db:prepare
