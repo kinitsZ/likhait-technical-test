@@ -2,6 +2,9 @@
 require "rubygems"
 require "bundler/setup"
 
-ARGV.unshift("--ensure-latest")
+# --ensure-latest was removed: it exits non-zero whenever the installed
+# Brakeman is not the newest published gem, which makes CI fail on someone
+# else's release schedule rather than on this project's code. Dependabot keeps
+# the gem current instead.
 
 load Gem.bin_path("brakeman", "brakeman")
